@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#131311; --paper:#f4f1ea; --card:#fffdf8;
+    --line:#d9d3c6; --muted:#6d6a60;
+    --accent:#2563eb; --accent-text:#1b4fcb;
+    --ok:#1d7a4d;
+    --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{ box-sizing:border-box; margin:0; }
+  body{
+    width:1240px; height:478px; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); padding:44px 48px 0; overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .eyebrow{
+    display:flex; align-items:center; gap:11px;
+    font-family:var(--mono); font-size:11px; font-weight:500;
+    letter-spacing:.15em; text-transform:uppercase; color:var(--muted);
+    margin-bottom:14px;
+  }
+  .eyebrow::before{ content:""; width:24px; height:2px; background:var(--accent); }
+  h1{
+    font-size:33px; font-weight:800; letter-spacing:-.035em; line-height:1.06;
+    max-width:1000px; text-wrap:balance;
+  }
+  h1 em{ font-style:normal; color:var(--accent-text); }
+
+  .flow{
+    display:grid; grid-template-columns:1.06fr 34px 1.04fr 34px 1.12fr 34px .94fr;
+    align-items:start; margin-top:34px;
+  }
+  .stage{ display:flex; flex-direction:column; }
+  .stage__k{
+    font-family:var(--mono); font-size:9.5px; font-weight:500; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted); margin-bottom:10px;
+  }
+  .stage__k b{ color:var(--accent-text); font-weight:500; }
+  .arrow{ display:flex; align-items:center; justify-content:center; align-self:stretch; padding-bottom:14px; }
+  .arrow svg{ width:20px; height:20px; color:#8f8a7e; }
+
+  .chips{ display:flex; flex-direction:column; gap:6px; }
+  .chip{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--card); border:1px solid var(--line); border-radius:3px;
+    padding:8px 11px; font-size:12.5px; font-weight:500;
+  }
+  .chip span{ font-family:var(--mono); font-size:8.5px; letter-spacing:.08em; color:var(--muted); text-transform:uppercase; }
+
+  .panel{ background:var(--card); border:1px solid var(--line); border-radius:4px; padding:12px; }
+  .panel__t{ font-size:12.5px; font-weight:700; letter-spacing:-.015em; }
+  .panel__s{ font-family:var(--mono); font-size:9px; letter-spacing:.07em; color:var(--muted); text-transform:uppercase; }
+  .conv{ border-top:1px solid var(--line); padding:8px 0; display:grid; gap:2px; }
+  .conv:first-of-type{ border-top:0; padding-top:7px; }
+  .conv b{ font-size:11.5px; font-weight:600; }
+  .conv i{ font-style:normal; font-family:var(--mono); font-size:8.5px; color:var(--muted); letter-spacing:.03em; }
+  .conv.on{ margin-inline:-12px; padding-inline:12px; background:#faf7f0; box-shadow:inset 2px 0 0 var(--accent); }
+
+  .veh{ display:grid; gap:9px; }
+  .veh__top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .pill{
+    font-family:var(--mono); font-size:8px; font-weight:500; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ok); border:1px solid currentColor;
+    border-radius:2px; padding:3px 5px; white-space:nowrap;
+  }
+  .veh__name{ font-size:13.5px; font-weight:700; letter-spacing:-.025em; }
+  .veh__meta{ font-family:var(--mono); font-size:9px; color:var(--muted); margin-top:2px; }
+  .veh__price{ font-size:18px; font-weight:700; letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
+  .veh__rows{ border-top:1px solid var(--line); padding-top:8px; display:grid; gap:5px; }
+  .veh__rows div{ display:flex; justify-content:space-between; gap:8px; font-size:10.5px; }
+  .veh__rows dt{ color:var(--muted); }
+  .veh__rows dd{ font-weight:500; text-align:right; }
+
+  .owner{ display:flex; align-items:center; gap:9px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
+  .avatar{
+    width:28px; height:28px; border-radius:50%; background:var(--ink); color:var(--paper);
+    display:grid; place-items:center; font-size:10px; font-weight:700; flex:none;
+  }
+  .owner b{ display:block; font-size:11.5px; font-weight:600; }
+  .owner i{ font-style:normal; font-family:var(--mono); font-size:8.5px; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<div class="eyebrow">Fluxo do atendimento</div>
+<h1>Os canais caem na mesma caixa de entrada — <em>e cada conversa está ligada ao veículo</em>.</h1>
+
+<div class="flow">
+
+  <div class="stage">
+    <div class="stage__k"><b>01</b> / Entrada</div>
+    <div class="chips">
+      <div class="chip">WhatsApp <span>chat</span></div>
+      <div class="chip">Instagram Direct <span>chat</span></div>
+      <div class="chip">Messenger <span>chat</span></div>
+      <div class="chip">OLX <span>anúncio</span></div>
+      <div class="chip">Mercado Livre <span>anúncio</span></div>
+      <div class="chip">Catálogo patrocinado <span>formulário</span></div>
+    </div>
+  </div>
+
+  <div class="arrow" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+  </div>
+
+  <div class="stage">
+    <div class="stage__k"><b>02</b> / Caixa única</div>
+    <div class="panel">
+      <div class="panel__t">Todas as conversas</div>
+      <div class="panel__s">Caixa de entrada única</div>
+      <div class="conv on">
+        <b>Marcos A.</b>
+        <i>WhatsApp · Civic EXL</i>
+      </div>
+      <div class="conv">
+        <b>Juliana P.</b>
+        <i>Direct · Corolla XEi</i>
+      </div>
+      <div class="conv">
+        <b>Anderson R.</b>
+        <i>M. Livre · Onix LTZ</i>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+  </div>
+
+  <div class="stage">
+    <div class="stage__k"><b>03</b> / Contexto</div>
+    <div class="panel veh">
+      <div class="veh__top">
+        <div>
+          <div class="veh__name">Honda Civic EXL 2.0</div>
+          <div class="veh__meta">2021 · 42.300 km · EST-0042</div>
+        </div>
+        <span class="pill">Disponível</span>
+      </div>
+      <div class="veh__price">R$ 128.900</div>
+      <dl class="veh__rows">
+        <div><dt>Origem do lead</dt><dd>Meta Ads</dd></div>
+        <div><dt>Campanha</dt><dd>Seminovos</dd></div>
+        <div><dt>Etapa</dt><dd>Test drive</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="arrow" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+  </div>
+
+  <div class="stage">
+    <div class="stage__k"><b>04</b> / Responsável</div>
+    <div class="panel">
+      <div class="panel__t">Lead atribuído</div>
+      <div class="panel__s">Distribuição por veículo</div>
+      <div class="owner">
+        <div class="avatar">RS</div>
+        <div>
+          <b>Rafael S.</b>
+          <i>Vendedor · Civic</i>
+        </div>
+      </div>
+      <div class="owner">
+        <div class="avatar" style="background:#e6e0d3; color:#5f5c53;">BP</div>
+        <div>
+          <b>Bianca P.</b>
+          <i>Vendedora · SUV</i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#131311; --paper:#f4f1ea; --card:#fffdf8; --soft:#faf7f0;
+    --line:#d9d3c6; --line-2:#e8e2d6; --muted:#6d6a60;
+    --accent:#2563eb; --accent-text:#1b4fcb; --accent-fill:#1d5ae0;
+    --ok:#1d7a4d;
+    --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{ box-sizing:border-box; margin:0; }
+  html,body{ margin:0; }
+  body{
+    width:1240px; height:880px; background:var(--card); color:var(--ink);
+    font-family:var(--sans); overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  .app{ height:100%; display:grid; grid-template-columns:288px 1fr 312px; }
+
+  /* ---------- lista ---------- */
+  .list{ border-right:1px solid var(--line); display:flex; flex-direction:column; }
+  .list__head{ padding:16px 16px 13px; border-bottom:1px solid var(--line); }
+  .list__t{ font-size:14.5px; font-weight:700; letter-spacing:-.02em; }
+  .list__s{ font-family:var(--mono); font-size:8.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); margin-top:3px; }
+  .filters{ display:flex; gap:5px; margin-top:12px; }
+  .filter{
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.05em; text-transform:uppercase;
+    border:1px solid var(--line); border-radius:2px; padding:4px 6px; color:var(--muted);
+  }
+  .filter.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+
+  .conv{ padding:12px 16px; border-bottom:1px solid var(--line-2); display:grid; gap:3px; }
+  .conv__top{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .conv__n{ font-size:12.5px; font-weight:600; }
+  .conv__time{ font-family:var(--mono); font-size:8px; color:var(--muted); }
+  .conv__v{ font-size:10.5px; color:var(--muted); }
+  .conv__tags{ display:flex; gap:4px; margin-top:2px; }
+  .tag{
+    font-family:var(--mono); font-size:7.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); border:1px solid var(--line); border-radius:2px; padding:2px 4px;
+  }
+  .tag--src{ color:var(--accent-text); border-color:currentColor; }
+  .conv.on{ background:var(--soft); box-shadow:inset 2px 0 0 var(--accent); }
+
+  /* ---------- conversa ---------- */
+  .thread{ display:flex; flex-direction:column; border-right:1px solid var(--line); min-width:0; }
+  .thread__head{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:13px 18px; border-bottom:1px solid var(--line);
+  }
+  .who{ display:flex; align-items:center; gap:9px; }
+  .avatar{
+    width:30px; height:30px; border-radius:50%; background:var(--ink); color:var(--paper);
+    display:grid; place-items:center; font-size:10px; font-weight:700; flex:none;
+  }
+  .who b{ display:block; font-size:13px; font-weight:600; letter-spacing:-.01em; }
+  .who i{ font-style:normal; font-family:var(--mono); font-size:8.5px; color:var(--muted); letter-spacing:.05em; }
+  .vehchip{
+    display:flex; align-items:center; gap:6px; border:1px solid var(--line);
+    border-radius:3px; padding:5px 8px; font-size:10.5px; font-weight:500; background:var(--soft);
+    white-space:nowrap;
+  }
+  .vehchip span{ font-family:var(--mono); font-size:8px; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; }
+
+  .msgs{ flex:1; padding:18px 20px; display:flex; flex-direction:column; gap:9px; overflow:hidden; }
+  .day{ align-self:center; font-family:var(--mono); font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  .msg{ max-width:78%; font-size:12px; line-height:1.5; padding:9px 12px; border-radius:6px; }
+  .msg.in{ align-self:flex-start; background:var(--paper); border:1px solid var(--line); border-bottom-left-radius:2px; }
+  .msg.out{ align-self:flex-end; background:var(--ink); color:#f7f4ec; border-bottom-right-radius:2px; }
+  .msg__t{ display:block; font-family:var(--mono); font-size:7.5px; letter-spacing:.06em; opacity:.72; margin-top:4px; text-align:right; }
+  .sys{
+    align-self:center; display:flex; align-items:center; gap:6px;
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.04em; color:var(--muted);
+    border:1px dashed var(--line); border-radius:3px; padding:5px 10px; background:var(--soft);
+  }
+  .sys b{ color:var(--accent-text); font-weight:500; }
+
+  .composer{ display:flex; align-items:center; gap:9px; padding:12px 18px; border-top:1px solid var(--line); }
+  .composer input{
+    flex:1; border:1px solid var(--line); border-radius:3px; background:var(--paper);
+    padding:10px 12px; font-family:var(--sans); font-size:12px; color:var(--muted);
+  }
+  .send{ background:var(--accent-fill); color:#fff; border-radius:3px; padding:10px 14px; font-size:11.5px; font-weight:600; }
+
+  /* ---------- veículo ---------- */
+  .side{ padding:16px 16px; display:flex; flex-direction:column; gap:12px; }
+  .side__k{ font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  .veh{ border:1px solid var(--line); border-radius:4px; padding:12px; background:var(--soft); }
+  .veh__top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .veh__name{ font-size:14px; font-weight:700; letter-spacing:-.025em; }
+  .veh__meta{ font-family:var(--mono); font-size:9px; color:var(--muted); margin-top:3px; }
+  .pill{
+    font-family:var(--mono); font-size:8px; font-weight:500; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ok); border:1px solid currentColor;
+    border-radius:2px; padding:3px 5px; white-space:nowrap;
+  }
+  .veh__price{ font-size:21px; font-weight:700; letter-spacing:-.04em; margin-top:10px; font-variant-numeric:tabular-nums; }
+  .rows{ margin-top:10px; border-top:1px solid var(--line); padding-top:9px; display:grid; gap:6px; }
+  .rows div{ display:flex; justify-content:space-between; gap:10px; font-size:11px; }
+  .rows dt{ color:var(--muted); }
+  .rows dd{ font-weight:500; text-align:right; }
+
+  .actions{ display:grid; gap:7px; }
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    border-radius:3px; padding:9px; font-size:11.5px; font-weight:600; letter-spacing:-.01em;
+  }
+  .btn--p{ background:var(--accent-fill); color:#fff; }
+  .btn--g{ border:1px solid var(--line); color:var(--ink); background:var(--card); }
+
+  .note{ border-top:1px solid var(--line); padding-top:10px; }
+  .note p{ font-size:11px; line-height:1.5; color:var(--muted); margin-top:5px; }
+
+  .steps{ display:grid; gap:0; }
+  .step{ display:grid; grid-template-columns:14px 1fr; gap:8px; align-items:baseline; padding:6px 0; font-size:11px; color:var(--muted); }
+  .step i{ font-style:normal; font-family:var(--mono); font-size:8px; color:#b9b3a4; }
+  .step.done i{ color:var(--ok); }
+  .step.done{ color:var(--ink); }
+  .step.now{ color:var(--accent-text); font-weight:600; }
+  .step.now i{ color:var(--accent-text); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- lista -->
+  <div class="list">
+    <div class="list__head">
+      <div class="list__t">Caixa de entrada</div>
+      <div class="list__s">Todos os canais</div>
+      <div class="filters">
+        <span class="filter on">Todos</span>
+        <span class="filter">WhatsApp</span>
+        <span class="filter">Direct</span>
+      </div>
+    </div>
+
+    <div class="conv on">
+      <div class="conv__top"><span class="conv__n">Marcos Andrade</span><span class="conv__time">agora</span></div>
+      <div class="conv__v">Honda Civic EXL 2.0</div>
+      <div class="conv__tags"><span class="tag">WhatsApp</span><span class="tag tag--src">Meta Ads</span></div>
+    </div>
+
+    <div class="conv">
+      <div class="conv__top"><span class="conv__n">Juliana Prado</span><span class="conv__time">12 min</span></div>
+      <div class="conv__v">Toyota Corolla XEi</div>
+      <div class="conv__tags"><span class="tag">Direct</span><span class="tag">Catálogo</span></div>
+    </div>
+
+    <div class="conv">
+      <div class="conv__top"><span class="conv__n">Anderson Rocha</span><span class="conv__time">40 min</span></div>
+      <div class="conv__v">Chevrolet Onix LTZ</div>
+      <div class="conv__tags"><span class="tag">Merc. Livre</span></div>
+    </div>
+
+    <div class="conv">
+      <div class="conv__top"><span class="conv__n">Patrícia Lima</span><span class="conv__time">2 h</span></div>
+      <div class="conv__v">Jeep Renegade Sport</div>
+      <div class="conv__tags"><span class="tag">OLX</span></div>
+    </div>
+
+    <div class="conv">
+      <div class="conv__top"><span class="conv__n">Diego Fontes</span><span class="conv__time">ontem</span></div>
+      <div class="conv__v">Hyundai HB20 Comfort</div>
+      <div class="conv__tags"><span class="tag">Messenger</span></div>
+    </div>
+
+    <div class="conv">
+      <div class="conv__top"><span class="conv__n">Camila Souza</span><span class="conv__time">ontem</span></div>
+      <div class="conv__v">Renault Kwid Zen</div>
+      <div class="conv__tags"><span class="tag">Catálogo</span></div>
+    </div>
+
+    <div class="conv">
+      <div class="conv__top"><span class="conv__n">Eduardo Melo</span><span class="conv__time">2 dias</span></div>
+      <div class="conv__v">Fiat Toro Endurance</div>
+      <div class="conv__tags"><span class="tag">WhatsApp</span></div>
+    </div>
+  </div>
+
+  <!-- conversa -->
+  <div class="thread">
+    <div class="thread__head">
+      <div class="who">
+        <div class="avatar">MA</div>
+        <div>
+          <b>Marcos Andrade</b>
+          <i>WhatsApp · (47) 9····-····</i>
+        </div>
+      </div>
+      <div class="vehchip"><span>Veículo</span> Civic EXL 2.0</div>
+    </div>
+
+    <div class="msgs">
+      <div class="day">Hoje</div>
+
+      <div class="msg in">
+        Boa tarde! Vi o Civic no anúncio. Ele ainda está disponível?
+        <span class="msg__t">14:12</span>
+      </div>
+
+      <div class="msg out">
+        Boa tarde, Marcos! Está sim. É o EXL 2.0, 2021, 42 mil km, único dono e com as revisões em concessionária.
+        <span class="msg__t">14:18 · Rafael</span>
+      </div>
+
+      <div class="msg in">
+        Tem como avaliar meu carro na troca?
+        <span class="msg__t">14:24</span>
+      </div>
+
+      <div class="msg out">
+        Temos. Consigo avaliar ainda hoje, se você puder passar aqui. Também posso já te adiantar uma proposta pelo Civic.
+        <span class="msg__t">14:31 · Rafael</span>
+      </div>
+
+      <div class="sys">
+        <b>Proposta enviada</b> · R$ 126.900 · vinculada a EST-0042
+      </div>
+
+      <div class="msg in">
+        O valor ficou bom. Consigo ver o carro sábado de manhã?
+        <span class="msg__t">14:34</span>
+      </div>
+
+      <div class="msg out">
+        Consigo às 10h. Pode ser?
+        <span class="msg__t">14:35 · Rafael</span>
+      </div>
+
+      <div class="msg in">
+        Pode. Até sábado.
+        <span class="msg__t">14:36</span>
+      </div>
+
+      <div class="msg out">
+        Reservado para sábado, 10h. Faço o test drive e a avaliação do seu Golf na mesma visita.
+        <span class="msg__t">14:37 · Rafael</span>
+      </div>
+    </div>
+
+    <div class="composer">
+      <input value="Escreva uma resposta…" readonly>
+      <span class="send">Enviar</span>
+    </div>
+  </div>
+
+  <!-- veículo -->
+  <div class="side">
+    <span class="side__k">Veículo vinculado</span>
+
+    <div class="veh">
+      <div class="veh__top">
+        <div>
+          <div class="veh__name">Honda Civic EXL 2.0</div>
+          <div class="veh__meta">2021 · 42.300 km · EST-0042</div>
+        </div>
+        <span class="pill">Disponível</span>
+      </div>
+      <div class="veh__price">R$ 128.900</div>
+      <dl class="rows">
+        <div><dt>Origem</dt><dd>Meta Ads</dd></div>
+        <div><dt>Campanha</dt><dd>Seminovos · Civic</dd></div>
+        <div><dt>Entrada no estoque</dt><dd>04/03</dd></div>
+      </dl>
+    </div>
+
+    <div class="actions">
+      <span class="btn btn--p">Ver proposta enviada</span>
+      <span class="btn btn--g">Reagendar test drive</span>
+    </div>
+
+    <span class="side__k">Etapa do atendimento</span>
+    <div class="steps">
+      <div class="step done"><i>01</i> Contato recebido</div>
+      <div class="step done"><i>02</i> Veículo identificado</div>
+      <div class="step done"><i>03</i> Proposta enviada</div>
+      <div class="step now"><i>04</i> Test drive agendado</div>
+      <div class="step"><i>05</i> Venda registrada</div>
+    </div>
+
+    <div class="note">
+      <span class="side__k">Nota interna</span>
+      <p>Rafael · 14:41 — cliente tem um Golf 2018 na troca. Avaliação marcada para sábado.</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
