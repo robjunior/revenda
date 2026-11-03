@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>revenda. — um cadastro, todos os canais</title>
+<meta name="description" content="Gestão de estoque para lojas de veículos: cadastre o veículo uma vez e publique em OLX, Mercado Livre, Instagram e Facebook, com medição de custo por canal.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ---------- tokens ---------- */
+  :root{
+    --ink:        #131311;
+    --ink-2:      #1e1e1a;
+    --paper:      #f4f1ea;
+    --card:       #fffdf8;
+    --line:       #d9d3c6;
+    --line-dark:  rgba(244,241,234,.16);
+    --muted:      #6d6a60;
+    --muted-dark: #a5a196;
+    /* signal azul: preenchimentos, filetes, display grande, grafismos */
+    --accent:      #2563eb;
+    /* texto pequeno em fundo claro (6.15:1 no papel) */
+    --accent-text: #1b4fcb;
+    /* texto pequeno em fundo escuro (7.73:1 no ink) */
+    --accent-dark: #7fa5ff;
+    /* controles preenchidos: branco sobre #1d5ae0 = 5.85:1 */
+    --accent-fill: #1d5ae0;
+    --accent-fill-h: #1648b0;
+
+    --accent-ink: #f4f1ea;
+    --ok:         #1d7a4d;
+    --warn:       #8a5f08;
+
+    --sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --pad: clamp(1.15rem, 4vw, 4rem);
+    --max: 1240px;
+    --sec: clamp(4.5rem, 9vw, 8.5rem);
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:clamp(1rem,.96rem + .16vw,1.0625rem);
+    line-height:1.6;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  h1,h2,h3,h4,p,dl,dd,figure{ margin:0; }
+  ul,ol{ margin:0; padding:0; list-style:none; }
+  a{ color:inherit; }
+  :focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+    border-radius:2px;
+  }
+  ::selection{ background:var(--accent); color:#fff; }
+
+  .wrap{
+    width:100%;
+    max-width:var(--max);
+    margin-inline:auto;
+    padding-inline:var(--pad);
+  }
+
+  /* ---------- shared type ---------- */
+  .label{
+    font-family:var(--mono);
+    font-size:.6875rem;
+    font-weight:500;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .dark .label{ color:var(--muted-dark); }
+
+  .h2{
+    font-size:clamp(1.9rem, 1.1rem + 2.6vw, 3.5rem);
+    line-height:1.04;
+    letter-spacing:-.035em;
+    font-weight:700;
+    text-wrap:balance;
+  }
+  .link{
+    color:var(--ink); text-decoration:underline;
+    text-decoration-color:var(--accent); text-decoration-thickness:1.5px;
+    text-underline-offset:3px;
+  }
+  .link:hover{ color:var(--accent-text); }
+  .lede{
+    font-size:clamp(1.0625rem, .95rem + .5vw, 1.3125rem);
+    line-height:1.55;
+    color:var(--muted);
+    max-width:38ch;
+    text-wrap:pretty;
+  }
+  .dark .lede{ color:var(--muted-dark); }
+  .num{ font-variant-numeric:tabular-nums; }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    --bg:var(--ink); --fg:var(--paper); --bd:var(--ink);
+    display:inline-flex; align-items:center; gap:.6em;
+    min-height:48px; padding:.75rem 1.35rem;
+    background:var(--bg); color:var(--fg);
+    border:1px solid var(--bd); border-radius:3px;
+    font-family:var(--sans); font-size:.9375rem; font-weight:600;
+    letter-spacing:-.01em; text-decoration:none; cursor:pointer;
+    transition:transform .16s ease, background-color .16s ease, color .16s ease, border-color .16s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn--accent{ --bg:var(--accent-fill); --fg:#fff; --bd:var(--accent-fill); }
+  .btn--accent:hover{ --bg:var(--accent-fill-h); --bd:var(--accent-fill-h); }
+  .btn--ghost{ --bg:transparent; --fg:var(--paper); --bd:var(--line-dark); }
+  .btn--ghost:hover{ --bd:var(--paper); }
+  .btn--ghost-ink{ --bg:transparent; --fg:var(--ink); --bd:var(--line); }
+  .btn--ghost-ink:hover{ --bd:var(--ink); }
+  .btn .arw{ display:inline-block; flex:none; transition:transform .16s ease; }
+  .btn:hover .arw{ transform:translateX(3px); }
+
+  /* ---------- header ---------- */
+  .site-head{
+    position:sticky; top:0; z-index:50;
+    background:var(--ink);
+    color:var(--paper);
+    border-bottom:1px solid var(--line-dark);
+  }
+  .site-head .wrap{
+    display:flex; align-items:center; gap:2rem;
+    min-height:66px;
+  }
+  .brand{
+    font-size:1.0625rem; font-weight:800; letter-spacing:-.045em;
+    text-decoration:none; white-space:nowrap;
+  }
+  .brand b{ color:var(--accent-dark); font-weight:800; }
+  .nav{
+    display:flex; align-items:center; gap:1.15rem;
+    margin-left:auto;
+  }
+  .nav a{
+    font-size:.875rem; font-weight:500; text-decoration:none;
+    color:var(--muted-dark);
+    padding-block:.7rem;
+    padding-inline:.5rem;
+    border-bottom:1px solid transparent;
+    transition:color .16s ease, border-color .16s ease;
+  }
+  .nav a:hover{ color:var(--paper); border-bottom-color:var(--line-dark); }
+  .site-head .btn{ min-height:44px; padding:.5rem 1rem; font-size:.875rem; margin-left:.5rem; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    background:var(--ink);
+    color:var(--paper);
+    padding-block:clamp(2.75rem,6vw,5.5rem) clamp(3rem,6vw,5rem);
+    border-bottom:1px solid var(--line-dark);
+    overflow:hidden;
+  }
+  .hero__grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
+    gap:clamp(2.25rem,5vw,4.5rem);
+    align-items:center;
+  }
+  .hero__eyebrow{
+    display:flex; align-items:center; gap:.7rem;
+    font-family:var(--mono); font-size:.6875rem; font-weight:500;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--muted-dark);
+    margin-bottom:clamp(1.5rem,3vw,2.25rem);
+  }
+  .hero__eyebrow::before{
+    content:""; width:26px; height:1px; background:var(--accent);
+  }
+  h1{
+    font-size:clamp(2.45rem, 1.1rem + 5.2vw, 5rem);
+    line-height:.96;
+    letter-spacing:-.045em;
+    font-weight:800;
+    text-wrap:balance;
+  }
+  h1 em{
+    font-style:normal;
+    color:var(--accent);
+  }
+  .hero__sub{
+    margin-top:clamp(1.5rem,3vw,2rem);
+    font-size:clamp(1.0625rem, .95rem + .55vw, 1.375rem);
+    line-height:1.5;
+    color:#d7d2c6;
+    max-width:34ch;
+    text-wrap:pretty;
+  }
+  .hero__sub strong{ color:var(--paper); font-weight:600; }
+  .hero__cta{
+    display:flex; flex-wrap:wrap; gap:.75rem;
+    margin-top:clamp(1.75rem,3.5vw,2.5rem);
+  }
+  .hero__channels{
+    display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .75rem;
+    margin-top:clamp(2rem,4vw,3rem);
+    padding-top:1.25rem;
+    border-top:1px solid var(--line-dark);
+  }
+  .hero__channels span{
+    font-family:var(--mono); font-size:.6875rem; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--muted-dark);
+  }
+  .hero__channels b{ font-weight:500; color:#e6e1d5; }
+
+  /* ---------- ficha (product mock) ---------- */
+  .record{
+    position:relative;
+    background:var(--card);
+    color:var(--ink);
+    border-radius:4px;
+    padding:1.25rem 1.25rem 1rem;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset, 0 24px 60px -30px rgba(0,0,0,.85);
+  }
+  .record::before{
+    content:"";
+    position:absolute; inset:-1px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:5px; pointer-events:none;
+  }
+  .record__top{
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    padding-bottom:.85rem;
+    border-bottom:1px solid var(--line);
+  }
+  .record__id{
+    font-family:var(--mono); font-size:.6875rem; font-weight:500;
+    letter-spacing:.1em; color:var(--muted);
+  }
+  .pill{
+    display:inline-flex; align-items:center; gap:.4rem;
+    font-family:var(--mono); font-size:.625rem; font-weight:500;
+    letter-spacing:.1em; text-transform:uppercase;
+    padding:.28rem .5rem; border-radius:2px;
+    border:1px solid currentColor;
+  }
+  .pill--ok{ color:var(--ok); }
+  .pill--warn{ color:var(--warn); }
+  .pill--idle{ color:var(--muted); }
+  .record__title{
+    font-size:1.375rem; font-weight:700; letter-spacing:-.03em;
+    line-height:1.15; margin-top:1rem;
+  }
+  .record__sub{
+    font-family:var(--mono); font-size:.75rem; letter-spacing:.02em;
+    color:var(--muted); margin-top:.35rem;
+  }
+  .record__price{
+    display:flex; align-items:baseline; gap:.6rem;
+    margin-top:1.1rem;
+  }
+  .record__price b{
+    font-size:1.875rem; font-weight:700; letter-spacing:-.04em;
+    font-variant-numeric:tabular-nums;
+  }
+  .record__price s{
+    font-family:var(--mono); font-size:.8125rem; color:var(--muted);
+    text-decoration-color:var(--accent);
+  }
+  .record__specs{
+    display:grid; grid-template-columns:1fr 1fr; gap:.5rem 1rem;
+    margin-top:1rem; padding-top:1rem;
+    border-top:1px solid var(--line);
+  }
+  .record__specs div{ display:flex; flex-direction:column; gap:.1rem; }
+  .record__specs dt{
+    font-family:var(--mono); font-size:.5625rem; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .record__specs dd{ font-size:.875rem; font-weight:500; }
+  .record__desc{
+    margin-top:.95rem;
+    font-size:.8125rem; line-height:1.5; color:var(--muted);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    overflow:hidden; text-wrap:pretty;
+  }
+  .record__channels{ margin-top:1.15rem; border-top:1px solid var(--line); }
+  .record__channels li{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:.35rem .75rem;
+    padding:.55rem 0;
+    border-bottom:1px solid var(--line);
+    font-size:.8125rem;
+  }
+  .record__channels li:last-child{ border-bottom:0; }
+  .record__channels .ch{ font-weight:600; letter-spacing:-.01em; }
+  .record__channels .st{
+    display:flex; align-items:center; gap:.42rem;
+    font-family:var(--mono); font-size:.625rem; letter-spacing:.06em;
+    color:var(--muted); text-align:right;
+  }
+  .dot{ width:6px; height:6px; border-radius:50%; flex:none; }
+  .dot--ok{ background:var(--ok); }
+  .dot--warn{ background:var(--warn); }
+  .dot--idle{ background:#b9b3a4; }
+  .record__foot{
+    display:flex; align-items:center; gap:.5rem;
+    margin-top:.85rem; padding-top:.85rem;
+    border-top:1px dashed var(--line);
+    font-family:var(--mono); font-size:.625rem; letter-spacing:.04em;
+    color:var(--muted);
+  }
+  .record__foot::before{
+    content:""; width:5px; height:5px; border-radius:50%;
+    background:var(--accent); flex:none;
+  }
+  .record__after{
+    display:grid; gap:.4rem;
+    margin-top:.85rem; padding:.95rem 1.05rem;
+    border:1px solid var(--line-dark); border-radius:4px;
+    background:rgba(255,255,255,.025);
+    font-size:.875rem; line-height:1.55; color:#ded9cc;
+    text-wrap:pretty;
+  }
+  .record__after-k{
+    font-family:var(--mono); font-size:.625rem; font-weight:500;
+    letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent-dark);
+  }
+
+  /* ---------- section scaffolding ---------- */
+  .sec{ padding-block:var(--sec); }
+  /* âncoras não ficam escondidas atrás do header fixo */
+  main section[id]{ scroll-margin-top:84px; }
+  .sec--tight{ padding-block:clamp(3rem,6vw,5rem); }
+  .dark{ background:var(--ink); color:var(--paper); }
+  .rule{ height:1px; background:var(--line); border:0; margin:0; }
+  .dark .rule{ background:var(--line-dark); }
+
+  .sec__head{
+    display:grid;
+    grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+    gap:clamp(1.5rem,4vw,4rem);
+    align-items:end;
+    padding-bottom:clamp(2rem,4vw,3.25rem);
+  }
+  .sec__head .label{ display:block; margin-bottom:1rem; }
+  .sec__head .lede{ justify-self:end; }
+
+  /* ---------- problema ---------- */
+  .pains{ border-top:1px solid var(--line); }
+  .pains li{
+    display:grid;
+    grid-template-columns:3.5rem minmax(0,1fr) minmax(0,1.15fr);
+    gap:clamp(1rem,3vw,2.5rem);
+    align-items:baseline;
+    padding-block:clamp(1.35rem,2.6vw,2rem);
+    border-bottom:1px solid var(--line);
+  }
+  .pains .n{
+    font-family:var(--mono); font-size:.75rem; font-weight:500;
+    color:var(--accent-text); letter-spacing:.06em;
+  }
+  .pains h3{
+    font-size:clamp(1.125rem,1rem + .5vw,1.375rem);
+    font-weight:600; letter-spacing:-.025em; line-height:1.25;
+    text-wrap:balance;
+  }
+  .pains p{ color:var(--muted); font-size:.9375rem; text-wrap:pretty; }
+
+  /* ---------- fluxo ---------- */
+  .flow{ counter-reset:step; border-top:1px solid var(--line-dark); }
+  .flow li{
+    counter-increment:step;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) minmax(0,1.1fr);
+    gap:clamp(1rem,3vw,2.5rem);
+    align-items:baseline;
+    padding-block:clamp(1.35rem,2.6vw,1.9rem);
+    border-bottom:1px solid var(--line-dark);
+    position:relative;
+  }
+  .flow li::before{
+    content:counter(step,decimal-leading-zero);
+    font-family:var(--mono); font-size:.75rem; font-weight:500;
+    color:var(--accent-text); letter-spacing:.06em;
+    width:2.5rem;
+  }
+  .dark .flow li::before{ color:var(--accent-dark); }
+  .flow h3{
+    font-size:clamp(1.125rem,1rem + .55vw,1.5rem);
+    font-weight:600; letter-spacing:-.03em; line-height:1.2;
+  }
+  .flow p{ color:var(--muted-dark); font-size:.9375rem; text-wrap:pretty; }
+  .flow__call{
+    display:flex; flex-wrap:wrap; align-items:center; gap:.5rem;
+    margin-top:clamp(1.75rem,4vw,2.75rem);
+    font-family:var(--mono); font-size:.75rem; letter-spacing:.04em;
+    color:var(--muted-dark);
+  }
+  .flow__call .ar{ color:var(--accent-dark); }
+
+  /* ---------- imagens do fluxo ---------- */
+  /* ocupa a largura total do container para a captura ficar perto de 1:1 */
+  .shots{
+    margin-top:clamp(3rem,6vw,4.5rem);
+    margin-inline:calc(var(--pad) * -1);
+  }
+  .shots__head{ margin-inline:var(--pad); }
+  .shots figcaption{ margin-inline:var(--pad); }
+  .shots__head{
+    display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between;
+    gap:.5rem 2.5rem; margin-bottom:clamp(1.25rem,2.5vw,1.75rem);
+    padding-bottom:1rem; border-bottom:1px solid var(--line-dark);
+  }
+  .shots__head p{
+    font-size:.8125rem; line-height:1.6; color:var(--muted-dark);
+    max-width:58ch; text-wrap:pretty;
+  }
+  .shots__img{
+    display:block; width:100%; height:auto; border-radius:4px;
+    border:1px solid rgba(244,241,234,.14);
+    box-shadow:0 30px 70px -40px rgba(0,0,0,.9);
+  }
+  .shots__frames{ display:grid; gap:clamp(.85rem,1.8vw,1.25rem); }
+  .shots figcaption{
+    margin-top:.85rem; font-family:var(--mono); font-size:.75rem; letter-spacing:.01em;
+    line-height:1.7; color:#b8b3a6; max-width:86ch; text-wrap:pretty;
+  }
+
+  /* em telas estreitas a captura vira painel navegável, em vez de texto ilegível */
+  @media (max-width:760px){
+    .shots__frames{
+      display:flex; gap:.8rem;
+      overflow-x:auto; overscroll-behavior-x:contain;
+      scroll-snap-type:x mandatory;
+      padding-bottom:.5rem;
+      -webkit-overflow-scrolling:touch;
+    }
+    /* mantém a captura a ~1000px para o texto continuar legível; o painel é arrastável */
+    .shots__frames > img{
+      flex:0 0 1000px; width:1000px; max-width:none;
+      scroll-snap-align:start;
+    }
+  }
+
+  /* ---------- etapas ---------- */
+  .etapas{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:0;
+    border-top:1px solid var(--line);
+  }
+  .etapa{
+    padding:clamp(1.25rem,2.4vw,1.75rem) clamp(1rem,2vw,1.5rem) clamp(1.5rem,3vw,2.25rem) 0;
+    border-bottom:1px solid var(--line);
+    border-right:1px solid var(--line);
+  }
+  .etapa:last-child{ border-right:0; padding-right:0; }
+  .etapa__k{
+    display:flex; align-items:center; justify-content:flex-start; gap:.5rem;
+    font-family:var(--mono); font-size:.6875rem; letter-spacing:.12em;
+    color:var(--muted); margin-bottom:clamp(1.25rem,2.2vw,2rem);
+  }
+  .etapa__k em{
+    font-style:normal; color:var(--accent-text);
+    letter-spacing:.08em; font-size:.625rem;
+    padding:.2rem .38rem; border:1px solid currentColor; border-radius:2px;
+  }
+  .etapa h3{
+    font-size:1.0625rem; font-weight:600; letter-spacing:-.02em;
+    line-height:1.25; margin-bottom:.6rem; text-wrap:balance;
+  }
+  .etapa p{ font-size:.875rem; line-height:1.55; color:var(--muted); text-wrap:pretty; }
+
+  /* ---------- canais ---------- */
+
+  .aside-note{
+    margin-top:clamp(1.5rem,3vw,2rem);
+    padding:1rem 0 1rem 1.1rem;
+    border-left:2px solid var(--accent);
+    font-size:.875rem; line-height:1.55; color:var(--muted-dark);
+    text-wrap:pretty;
+  }
+  .aside-note b{ color:var(--paper); font-weight:600; }
+
+  /* ---------- produto ---------- */
+  .prod{ display:grid; gap:clamp(2.5rem,5vw,3.75rem); }
+  .prod__item{ display:grid; gap:clamp(1rem,2vw,1.4rem); }
+  .prod__head{
+    display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
+    gap:clamp(1rem,3vw,3rem); align-items:baseline;
+    padding-top:1.1rem; border-top:1px solid var(--line);
+  }
+  .prod__head h3{
+    font-size:clamp(1.15rem,1rem + .55vw,1.55rem);
+    font-weight:700; letter-spacing:-.03em; line-height:1.15;
+  }
+  .prod__head p{
+    font-size:.9375rem; line-height:1.6; color:var(--muted);
+    max-width:64ch; text-wrap:pretty;
+  }
+  .prod__img{
+    display:block; width:100%; height:auto;
+    border:1px solid var(--line); border-radius:4px;
+    box-shadow:0 24px 50px -40px rgba(0,0,0,.55);
+  }
+
+  /* ---------- módulos ---------- */
+  .mods{
+    display:grid; grid-template-columns:repeat(5,minmax(0,1fr));
+    margin-top:clamp(2rem,4vw,3rem);
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .mod{
+    padding:clamp(1.1rem,2vw,1.5rem) clamp(.85rem,1.5vw,1.15rem) clamp(1.25rem,2.2vw,1.7rem);
+    border-left:1px solid var(--line);
+  }
+  .mod:first-child{ border-left:0; padding-left:0; }
+  .mod__n{
+    font-family:var(--mono); font-size:.625rem; font-weight:500;
+    letter-spacing:.13em; color:var(--accent-text);
+  }
+  .mod__name{
+    font-size:clamp(1.05rem,1rem + .35vw,1.3rem);
+    font-weight:700; letter-spacing:-.03em; margin-top:.45rem;
+  }
+  .mod__role{
+    font-family:var(--mono); font-size:.625rem; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--muted); margin-top:.3rem;
+  }
+  .mod p{
+    margin-top:.55rem; font-size:.8125rem; line-height:1.55;
+    color:var(--muted); text-wrap:pretty;
+  }
+
+  /* módulo entregue por etapa */
+  .etapa__mods{
+    margin-top:.85rem; padding-top:.6rem; border-top:1px solid var(--line);
+    font-family:var(--mono); font-size:.5625rem; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .etapa__mods b{ color:var(--ink); font-weight:500; }
+
+  /* ---------- tráfego pago ---------- */
+  .paid{ display:block; }
+  .paid__list{ border-top:1px solid var(--line); }
+  .paid__list li{
+    display:grid; grid-template-columns:2rem minmax(0,1fr); gap:1rem;
+    padding-block:1.1rem;
+    border-bottom:1px solid var(--line);
+  }
+  .paid__list p{ max-width:66ch; }
+  .paid__list .n{
+    font-family:var(--mono); font-size:.6875rem; font-weight:500;
+    letter-spacing:.08em; color:var(--accent-text); padding-top:.28rem;
+  }
+  .paid__list h3{
+    font-size:1rem; font-weight:600; letter-spacing:-.02em;
+    margin-bottom:.25rem;
+  }
+  .paid__list p{ font-size:.875rem; line-height:1.55; color:var(--muted); text-wrap:pretty; }
+
+  /* na coluna estreita, nome do canal acima da descrição — evita parede de texto */
+
+  .aside-note--light{ color:var(--muted); }
+  .paid + .aside-note{ margin-top:clamp(1.75rem,3vw,2.5rem); max-width:80ch; }
+  .aside-note--light b{ color:var(--ink); }
+
+  .sec--ruled{ border-bottom:1px solid var(--line); }
+
+  /* ---------- comercial ---------- */
+  .model{ border-top:1px solid var(--line); }
+  .model__row{
+    display:grid;
+    grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+    gap:1.5rem;
+    align-items:baseline;
+    padding-block:1.05rem;
+    border-bottom:1px solid var(--line);
+  }
+  .model__row dt{
+    font-size:.9375rem; font-weight:500; letter-spacing:-.01em;
+    display:flex; align-items:center; gap:.6rem;
+  }
+  .model__row dd{
+    font-family:var(--mono); font-size:.9375rem; font-weight:500;
+    font-variant-numeric:tabular-nums; text-align:right;
+    letter-spacing:-.01em;
+  }
+  .model__row dd small{
+    display:block; font-family:var(--sans); font-size:.75rem;
+    font-weight:400; color:var(--muted); letter-spacing:0;
+    margin-top:.1rem;
+  }
+  .model__row--lead dd{ color:var(--accent-text); }
+  .model__row--lead dd small{ color:var(--muted); }
+  .model__limits{
+    margin-top:1.35rem; padding-top:1.1rem;
+    border-top:1px solid var(--line);
+    font-size:.9375rem; line-height:1.6; color:var(--muted); text-wrap:pretty;
+  }
+  .model__limits b{ color:var(--ink); font-weight:600; }
+
+  .model__fine{
+    margin-top:1.5rem; font-size:.8125rem; line-height:1.6;
+    color:var(--muted); max-width:64ch; text-wrap:pretty;
+  }
+
+  /* ---------- cta final ---------- */
+  .close{
+    background:var(--ink); color:var(--paper);
+    padding-block:clamp(4rem,8vw,7rem);
+    border-top:1px solid var(--line-dark);
+  }
+  .close__grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+    gap:clamp(2rem,5vw,5rem);
+    align-items:end;
+  }
+  .close h2{
+    font-size:clamp(2rem,1.2rem + 3vw,3.75rem);
+    line-height:1.02; letter-spacing:-.04em; font-weight:700;
+    text-wrap:balance;
+  }
+  .close h2 em{ font-style:normal; color:var(--accent); }
+  .close__right p{ color:var(--muted-dark); text-wrap:pretty; }
+  .close__actions{
+    display:flex; flex-wrap:wrap; gap:.75rem; margin-top:1.5rem;
+  }
+  .close__meta{
+    display:flex; flex-wrap:wrap; gap:1.5rem;
+    margin-top:.9rem;
+    font-family:var(--mono); font-size:.6875rem; letter-spacing:.06em;
+    color:var(--muted-dark);
+  }
+
+  /* ---------- footer ---------- */
+  .site-foot{
+    background:var(--ink); color:var(--muted-dark);
+    border-top:1px solid var(--line-dark);
+    padding-block:1.75rem;
+  }
+  .site-foot .wrap{
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+    gap:1rem;
+  }
+  .site-foot p{ font-size:.75rem; font-family:var(--mono); letter-spacing:.03em; }
+  .site-foot .brand{ color:var(--paper); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1000px){
+    .hero__grid{ grid-template-columns:1fr; gap:2.75rem; }
+    .paid{ grid-template-columns:1fr; gap:2.25rem; }
+    .prod__head{ grid-template-columns:1fr; gap:.5rem; }
+    .mods{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .mod:nth-child(odd){ border-left:0; padding-left:0; }
+    .mod:nth-child(n+3){ border-top:1px solid var(--line); }
+    .record{ max-width:440px; }
+    .sec__head{ grid-template-columns:1fr; gap:1.25rem; }
+    .sec__head .lede{ justify-self:start; }
+    .etapas{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .etapa{ padding-right:clamp(1rem,2vw,1.5rem); }
+    .etapa:nth-child(2n){ border-right:0; padding-right:0; }
+    .close__grid{ grid-template-columns:1fr; gap:2rem; }
+  }
+  /* o menu completo não cabe com 6 itens + CTA abaixo disso */
+  @media (max-width:940px){
+    .nav{ display:none; }
+    .site-head .btn{ margin-left:auto; }
+  }
+  @media (max-width:760px){
+    .pains li, .flow li{
+      grid-template-columns:2.25rem minmax(0,1fr);
+      gap:.75rem 1rem;
+    }
+    .pains p, .flow p{ grid-column:2; }
+    .flow li{ grid-template-columns:2.25rem minmax(0,1fr); }
+    .flow li::before{ width:2.25rem; }
+    .model__row{ grid-template-columns:1fr; gap:.35rem; }
+    .model__row dd{ text-align:left; }
+  }
+  @media (max-width:560px){
+    .mods{ grid-template-columns:1fr; }
+    .mod{ border-left:0; padding-left:0; border-top:1px solid var(--line); padding-block:1.15rem; }
+    .mod:first-child{ border-top:0; }
+    .etapas{ grid-template-columns:1fr; }
+    .etapa{ border-right:0; padding-right:0; }
+    .etapa__k{ margin-bottom:1rem; }
+    .btn{ width:100%; justify-content:center; }
+    .hero__cta{ gap:.6rem; }
+    .record__specs{ grid-template-columns:1fr 1fr; }
+  }
+
+  /* ---------- reveal on scroll (único efeito; 1-2 elementos por view) ---------- */
+  .js-reveal{ opacity:0; transform:translateY(9px); }
+  .js-reveal.is-in{
+    opacity:1; transform:none;
+    transition:opacity .5s ease, transform .5s cubic-bezier(.22,.61,.36,1);
+  }
+  .site-head.is-stuck{ box-shadow:0 1px 0 var(--line-dark), 0 12px 28px -18px rgba(0,0,0,.9); }
+
+  @media (prefers-reduced-motion:reduce){
+    .js-reveal{ opacity:1; transform:none; }
+    html{ scroll-behavior:auto; }
+    *,*::before,*::after{
+      animation-duration:.001ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="#top">revenda<b>.</b></a>
+    <nav class="nav" aria-label="Seções">
+      <a href="#problema">O problema</a>
+      <a href="#fluxo">O fluxo</a>
+      <a href="#etapas">Etapas</a>
+      <a href="#produto">Produto</a>
+      <a href="#trafego">Tráfego pago</a>
+      <a href="#comercial">Investimento</a>
+    </nav>
+    <a class="btn btn--accent" href="mailto:contato.paulorobertodev@gmail.com">Falar por e-mail</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero dark">
+    <div class="wrap">
+      <div class="hero__grid">
+        <div>
+          <p class="hero__eyebrow">Sistema de gestão para lojas de veículos</p>
+          <h1>Cadastre o veículo uma vez. <em>Publique em todos os canais.</em></h1>
+          <p class="hero__sub">
+            O estoque da loja passa a ser a fonte oficial dos dados. Preço, quilometragem, fotos
+            e status vêm do mesmo registro — e OLX, Mercado Livre, Instagram e Facebook
+            <strong>deixam de exigir trabalho manual</strong>.
+          </p>
+          <div class="hero__cta">
+            <a class="btn btn--accent" href="mailto:contato.paulorobertodev@gmail.com">Falar por e-mail <svg class="arw" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+            <a class="btn btn--ghost" href="#fluxo">Ver o fluxo completo</a>
+          </div>
+          <div class="hero__channels">
+            <span>Canais</span>
+            <b>OLX</b> <b>Mercado Livre</b> <b>Instagram</b> <b>Facebook</b>
+            <b>Catálogo de anúncios</b>
+            <span style="margin-left:auto">Depois: WhatsApp &middot; Direct &middot; Messenger</span>
+          </div>
+        </div>
+
+        <div>
+        <figure class="record" aria-label="Exemplo de ficha de veículo com o status de publicação em cada canal">
+          <div class="record__top">
+            <span class="record__id">EST-0042</span>
+            <span class="pill pill--ok">Disponível</span>
+          </div>
+          <h3 class="record__title">Honda Civic EXL 2.0</h3>
+          <p class="record__sub">2021 &middot; 42.300 km &middot; Automático &middot; Cinza</p>
+
+          <div class="record__price">
+            <b class="num">R$ 128.900</b>
+            <s class="num">R$ 134.900</s>
+          </div>
+
+          <dl class="record__specs">
+            <div><dt>Placa</dt><dd class="num">FRT-2A18</dd></div>
+            <div><dt>Entrada</dt><dd class="num">04/03</dd></div>
+            <div><dt>Combustível</dt><dd>Flex</dd></div>
+            <div><dt>Responsável</dt><dd>Rafael</dd></div>
+          </dl>
+
+          <p class="record__desc">Único dono, revisões em concessionária, pneus e pastilhas trocados na entrada.</p>
+
+          <ul class="record__channels">
+            <li>
+              <span class="ch">OLX</span>
+              <span class="st"><i class="dot dot--ok"></i> publicado &middot; 3 min</span>
+            </li>
+            <li>
+              <span class="ch">Mercado Livre</span>
+              <span class="st"><i class="dot dot--ok"></i> publicado &middot; 3 min</span>
+            </li>
+            <li>
+              <span class="ch">Instagram</span>
+              <span class="st"><i class="dot dot--warn"></i> sincronizando</span>
+            </li>
+            <li>
+              <span class="ch">Facebook</span>
+              <span class="st"><i class="dot dot--idle"></i> aguardando aprovação</span>
+            </li>
+            <li>
+              <span class="ch">Catálogo de anúncios</span>
+              <span class="st"><i class="dot dot--ok"></i> no ar &middot; 3 min</span>
+            </li>
+          </ul>
+
+          <p class="record__foot">Preço reduzido às 14:32 &mdash; anúncios e catálogo atualizados</p>
+        </figure>
+
+        <p class="record__after">
+          <span class="record__after-k">Vendido em 12/03</span>
+          Todos os anúncios saíram do ar no mesmo momento, incluindo o catálogo. Nenhum cliente liga para perguntar por um veículo já vendido.
+        </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROBLEMA ============ -->
+  <section class="sec" id="problema">
+    <div class="wrap">
+      <div class="sec__head">
+        <div>
+          <span class="label">01 / O problema</span>
+          <h2 class="h2">Cada canal mantém a sua cópia do veículo. Alguma está errada.</h2>
+        </div>
+        <p class="lede">
+          O problema não é falta de ferramenta, e sim a ausência de uma fonte única para os dados
+          do veículo. Quando cada canal mantém a sua cópia, a cópia desatualiza.
+        </p>
+      </div>
+
+      <ul class="pains">
+        <li>
+          <span class="n">A</span>
+          <h3>Preço desatualizado no anúncio</h3>
+          <p>O preço do veículo foi reduzido em R$ 4 mil na loja e o anúncio permanece no valor anterior. O cliente chega esperando outro valor, e a negociação começa de forma errada.</p>
+        </li>
+        <li>
+          <span class="n">B</span>
+          <h3>Veículo vendido com anúncio no ar</h3>
+          <p>O anúncio não foi retirado do canal. A loja continua recebendo ligações sobre um veículo já entregue, e a equipe comercial gasta o dia explicando a situação.</p>
+        </li>
+        <li>
+          <span class="n">C</span>
+          <h3>Planilha por vendedor</h3>
+          <p>Não existe um registro oficial de quilometragem, valor de entrada ou custo. Duas pessoas informam versões diferentes sobre o mesmo veículo.</p>
+        </li>
+        <li>
+          <span class="n">D</span>
+          <h3>Cadastro refeito a cada canal</h3>
+          <p>Fotos, descrição e dados da versão são refeitos em cada canal. O trabalho de cadastrar o mesmo veículo se repete em vez de ser reaproveitado.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ FLUXO ============ -->
+  <section class="sec dark" id="fluxo">
+    <div class="wrap">
+      <div class="sec__head">
+        <div>
+          <span class="label">02 / O fluxo</span>
+          <h2 class="h2">Um fluxo único, do cadastro ao indicador.</h2>
+        </div>
+        <p class="lede">
+          O objetivo não é apenas publicar anúncios, e sim transformar o processo manual da loja
+          em um caminho único, em que cada etapa alimenta a seguinte.
+        </p>
+      </div>
+
+      <ol class="flow">
+        <li>
+          <h3>Cadastrar o veículo</h3>
+          <p>Um único registro com fotos, preço, quilometragem, versão, descrição e status do estoque. É a fonte oficial dos dados.</p>
+        </li>
+        <li>
+          <h3>Publicar nos canais</h3>
+          <p>O mesmo registro é enviado ao OLX, ao Mercado Livre, ao Instagram, ao Facebook e ao catálogo de anúncios patrocinados, respeitando as regras e os limites de cada canal.</p>
+        </li>
+        <li>
+          <h3>Receber os interessados</h3>
+          <p>Contatos do WhatsApp, Direct, Messenger e marketplaces chegam ao mesmo lugar, associados ao veículo que gerou o interesse.</p>
+        </li>
+        <li>
+          <h3>Acompanhar a negociação</h3>
+          <p>Cada lead tem responsável, histórico e etapa. O vendedor sabe quem já respondeu, quem pediu proposta e quem perdeu o interesse.</p>
+        </li>
+        <li>
+          <h3>Registrar a venda</h3>
+          <p>Ao marcar o veículo como vendido, os anúncios são retirados, e o estoque e os indicadores são atualizados automaticamente.</p>
+        </li>
+      </ol>
+
+      <p class="flow__call">
+        <span>Cadastrar</span><span class="ar" aria-hidden="true">→</span>
+        <span>publicar</span><span class="ar" aria-hidden="true">→</span>
+        <span>receber</span><span class="ar" aria-hidden="true">→</span>
+        <span>negociar</span><span class="ar" aria-hidden="true">→</span>
+        <span>vender</span><span class="ar" aria-hidden="true">→</span>
+        <span>atualizar estoque, indicadores e custo por canal</span>
+      </p>
+
+      <figure class="shots">
+        <div class="shots__head">
+          <span class="label">Do canal ao vendedor</span>
+          <p>
+            Como o atendimento funciona na etapa 03: os canais caem na mesma caixa de entrada
+            e cada conversa carrega o veículo que a originou.
+          </p>
+        </div>
+
+        <div class="shots__frames">
+        <img class="shots__img"
+             src="img/fluxo-atendimento.png"
+             srcset="img/fluxo-atendimento.png 1x, img/fluxo-atendimento@2x.png 2x"
+             width="1240" height="478" loading="lazy" decoding="async"
+             alt="Diagrama do fluxo: WhatsApp, Instagram Direct, Messenger, OLX, Mercado Livre e catálogo patrocinado chegam a uma caixa de entrada única; cada conversa aparece ligada ao veículo, com origem do lead, campanha e etapa; e o lead é atribuído a um vendedor.">
+        </div>
+
+        <figcaption>
+          Os canais caem na mesma caixa de entrada, e cada conversa carrega o veículo que a originou.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ ETAPAS ============ -->
+  <section class="sec" id="etapas">
+    <div class="wrap">
+      <div class="sec__head">
+        <div>
+          <span class="label">03 / As etapas</span>
+          <h2 class="h2">O sistema é entregue em quatro etapas, não em uma entrega única.</h2>
+        </div>
+        <p class="lede">
+          As etapas 01, 02 e 03 formam o MVP: cadastro, publicação e atendimento — do carro
+          no pátio ao lead respondido. A etapa 04 fecha a operação da loja. Cada etapa declara
+          os módulos que entrega.
+        </p>
+      </div>
+
+      <div class="etapas">
+        <article class="etapa">
+          <div class="etapa__k"><span>Etapa 01</span><em>MVP</em></div>
+          <h3>Cadastro central de veículos</h3>
+          <p>Um único cadastro por veículo, com fotos, preço, quilometragem, versão, descrição e status do estoque. É a base de todas as etapas seguintes.</p>
+          <p class="etapa__mods">Módulo · <b>Atlas</b></p>
+        </article>
+        <article class="etapa">
+          <div class="etapa__k"><span>Etapa 02</span><em>MVP</em></div>
+          <h3>Canais e catálogo patrocinado</h3>
+          <p>Publicar, atualizar preço, sincronizar informações e retirar os anúncios quando o veículo é vendido. O mesmo registro gera o feed do catálogo e o custo por canal.</p>
+          <p class="etapa__mods">Módulo · <b>Fama</b></p>
+        </article>
+        <article class="etapa">
+          <div class="etapa__k"><span>Etapa 03</span><em>MVP</em></div>
+          <h3>Gestão de leads</h3>
+          <p>Reunir contatos, associar cada interessado ao veículo, distribuir os leads entre os vendedores e acompanhar o atendimento até a resposta.</p>
+          <p class="etapa__mods">Módulos · <b>Argos</b> e <b>Hermes</b></p>
+        </article>
+        <article class="etapa">
+          <div class="etapa__k"><span>Etapa 04</span></div>
+          <h3>Sistema completo da loja</h3>
+          <p>Compras e entrada de veículos, clientes, propostas, vendas, comissões, despesas, documentos, financeiro e relatórios gerenciais.</p>
+          <p class="etapa__mods">Módulo · <b>Ágora</b></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ O PRODUTO ============ -->
+  <section class="sec" id="produto">
+    <div class="wrap">
+      <div class="sec__head">
+        <div>
+          <span class="label">04 / O produto</span>
+          <h2 class="h2">O sistema, por dentro.</h2>
+        </div>
+        <p class="lede">
+          Três telas resumem a operação: cadastrar o veículo, publicar nos canais e atender quem
+          chega. Tudo parte do mesmo registro.
+        </p>
+      </div>
+
+      <div class="prod">
+
+        <article class="prod__item">
+          <div class="prod__head">
+            <h3>Cadastro do veículo</h3>
+            <p>Fotos, preço, quilometragem, versão, opcionais e status em um registro só. É o dado que alimenta todos os canais — e o mesmo que o vendedor consulta no balcão.</p>
+          </div>
+          <img class="prod__img"
+               src="img/cadastro-veiculo.png"
+               srcset="img/cadastro-veiculo.png 1x, img/cadastro-veiculo@2x.png 2x"
+               width="1240" height="584" loading="lazy" decoding="async"
+               alt="Tela de cadastro do veículo: campos de marca, modelo, versão, ano, quilometragem, placa, combustível, câmbio, cor, preço e descrição, uma grade de fotos, o status do estoque e o botão Salvar e publicar.">
+        </article>
+
+        <article class="prod__item">
+          <div class="prod__head">
+            <h3>Publicação nos canais</h3>
+            <p>Um clique publica, atualiza preço e retira o anúncio. Cada canal mostra o seu estado — publicado, sincronizando ou aguardando —, e o que falha fica marcado para a próxima rodada.</p>
+          </div>
+          <img class="prod__img"
+               src="img/publicador-canais.png"
+               srcset="img/publicador-canais.png 1x, img/publicador-canais@2x.png 2x"
+               width="1240" height="580" loading="lazy" decoding="async"
+               alt="Tela de publicação nos canais: alteração de preço pendente e a lista de canais — OLX, Mercado Livre, Instagram, Facebook e catálogo de anúncios — com o estado de cada um e o resumo da publicação.">
+        </article>
+
+        <article class="prod__item">
+          <div class="prod__head">
+            <h3>Gestão de leads</h3>
+            <p>Toda conversa chega na mesma caixa, ligada ao veículo e à campanha que a trouxe. O lead tem responsável, etapa e histórico até a venda.</p>
+          </div>
+          <img class="prod__img"
+               src="img/inbox-veiculo.png"
+               srcset="img/inbox-veiculo.png 1x, img/inbox-veiculo@2x.png 2x"
+               width="1240" height="880" loading="lazy" decoding="async"
+               alt="Tela de gestão de leads: lista de conversas, a conversa com o cliente sobre o Honda Civic, o painel do veículo vinculado com origem e campanha, e a etapa do atendimento.">
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRÁFEGO PAGO ============ -->
+  <section class="sec sec--ruled" id="trafego">
+    <div class="wrap">
+      <div class="sec__head">
+        <div>
+          <span class="label">05 / Tráfego pago</span>
+          <h2 class="h2">Mídia paga não corrige estoque desatualizado. Ela amplia o alcance do erro.</h2>
+        </div>
+        <p class="lede">
+          Por isso o tráfego pago entra no MVP pelo lado do dado — alimentando a mídia com o
+          estoque oficial e medindo o retorno — e não pelo lado da compra de mídia.
+        </p>
+      </div>
+
+      <div class="paid">
+        <div>
+          <ul class="paid__list">
+            <li>
+              <span class="n">01</span>
+              <div>
+                <h3>Feed do catálogo</h3>
+                <p>O mesmo registro do veículo gera o feed estruturado que alimenta o catálogo de anúncios. Quando o preço muda ou o veículo é vendido, o feed é reescrito junto com os anúncios.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">02</span>
+              <div>
+                <h3>Origem do clique</h3>
+                <p>Cada canal recebe um link com identificação própria, para que o lead chegue com a origem e o veículo que gerou o interesse registrados.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">03</span>
+              <div>
+                <h3>Custo por canal</h3>
+                <p>O investimento do mês é lançado por canal. No início o lançamento é manual; a importação via API entra quando a conta permitir.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">04</span>
+              <div>
+                <h3>CAC por canal e por veículo</h3>
+                <p>Investimento dividido pelas vendas, com o custo por lead no meio do caminho. É o número que orienta a alocação de verba no mês seguinte — e que nenhum marketplace entrega.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <p class="aside-note aside-note--light">
+        <b>Gestão de campanha — orçamento, lance, público e criativo — fica fora do MVP.</b>
+        O sistema entrega o dado e mede o retorno; não substitui o gestor de mídia.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ COMO É CONSTRUÍDO ============ -->
+  <section class="sec" id="construcao">
+    <div class="wrap">
+      <div class="sec__head">
+        <div>
+          <span class="label">06 / Como é construído</span>
+          <h2 class="h2">Cinco módulos, um sistema.</h2>
+        </div>
+        <p class="lede">
+          As etapas dizem quando cada parte entra. Os módulos dizem do que o sistema é
+          feito — cada um responde por uma parte da operação da loja.
+        </p>
+      </div>
+
+      <div class="mods">
+        <article class="mod">
+          <span class="mod__n">01</span>
+          <div class="mod__name">Atlas</div>
+          <div class="mod__role">Núcleo</div>
+          <p>O registro do veículo. Fonte oficial de preço, quilometragem, fotos e status do estoque.</p>
+        </article>
+        <article class="mod">
+          <span class="mod__n">02</span>
+          <div class="mod__name">Fama</div>
+          <div class="mod__role">Saída</div>
+          <p>Leva o veículo para fora: canais, catálogo patrocinado e feed de anúncios.</p>
+        </article>
+        <article class="mod">
+          <span class="mod__n">03</span>
+          <div class="mod__name">Argos</div>
+          <div class="mod__role">Entrada</div>
+          <p>Traz o que chega de fora: WhatsApp, Direct, Messenger, marketplaces e formulários.</p>
+        </article>
+        <article class="mod">
+          <span class="mod__n">04</span>
+          <div class="mod__name">Hermes</div>
+          <div class="mod__role">Diálogo</div>
+          <p>A conversa com o cliente: caixa de entrada, atribuição ao vendedor e histórico por veículo.</p>
+        </article>
+        <article class="mod">
+          <span class="mod__n">05</span>
+          <div class="mod__name">Ágora</div>
+          <div class="mod__role">Coordenação</div>
+          <p>A operação da loja: compras, vendas, comissões, financeiro e indicadores.</p>
+        </article>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ COMERCIAL ============ -->
+  <section class="sec" id="comercial">
+    <div class="wrap">
+      <div class="sec__head">
+        <div>
+          <span class="label">07 / Investimento</span>
+          <h2 class="h2">Como o projeto começa.</h2>
+        </div>
+        <p class="lede">
+          Um MVP enxuto, com escopo fechado, para comprovar o primeiro marco antes de
+          qualquer expansão. Os valores abaixo são uma proposta, não uma tabela de preços.
+        </p>
+      </div>
+
+      <dl class="model">
+        <div class="model__row">
+          <dt>Desenvolvimento do MVP</dt>
+          <dd>R$ 3.500/mês <small>por 3 meses</small></dd>
+        </div>
+        <div class="model__row model__row--lead">
+          <dt>Total inicial</dt>
+          <dd>R$ 10.500 <small>implantação completa do MVP</small></dd>
+        </div>
+        <div class="model__row">
+          <dt>Licença e suporte após a implantação</dt>
+          <dd>~ R$ 2.000/mês <small>com exclusividade do sistema para a loja enquanto o suporte estiver sendo pago</small></dd>
+        </div>
+        <div class="model__row">
+          <dt>Infraestrutura e APIs pagas</dt>
+          <dd>Cobradas à parte <small>conforme consumo real</small></dd>
+        </div>
+        <div class="model__row">
+          <dt>Variável por venda atribuída</dt>
+          <dd>A definir <small>após o piloto, conforme o volume de vendas atribuídas</small></dd>
+        </div>
+      </dl>
+
+      <p class="model__limits">
+        <b>Sem limite de usuários, de leads e de cadastros.</b>
+        Todo vendedor usa, todo interessado entra, todo veículo é cadastrado — sem cobrança por
+        assento, por lead ou por anúncio.
+      </p>
+
+      <p class="model__fine">
+        Os valores são uma proposta em negociação, não preços de mercado validados.
+        O MVP inclui o cadastro, a publicação nos canais, o catálogo patrocinado, o custo por
+        canal e a gestão de leads. A gestão de campanha de mídia não está incluída.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="close dark" id="contato">
+    <div class="wrap">
+      <div class="close__grid">
+        <div>
+          <span class="label" style="display:block;margin-bottom:1.25rem;">O primeiro marco</span>
+          <h2>Comprovar que um veículo cadastrado uma vez <em>entra no ar nos canais prioritários</em> — e sai quando é vendido.</h2>
+        </div>
+        <div class="close__right">
+          <p>
+            A partir daí, o sistema evolui para a gestão de leads e para a operação completa da loja.
+            A implantação é feita com o estoque real da sua loja, não com dados de exemplo.
+          </p>
+          <div class="close__actions">
+            <a class="btn btn--accent" href="mailto:contato.paulorobertodev@gmail.com">Falar por e-mail <svg class="arw" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+            <a class="btn btn--ghost" href="#etapas">Revisar as etapas</a>
+          </div>
+          <div class="close__meta">
+            <span>contato.paulorobertodev@gmail.com</span>
+            <span>MVP em 3 meses</span>
+            <span>Sem limite de usuários, leads e cadastros</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <a class="brand" href="#top">revenda<b>.</b></a>
+    <p>Sistema de gestão e automação para lojas de veículos</p>
+    <p>&copy; <span id="yr">2026</span></p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* Header ganha sombra depois do primeiro scroll */
+  const head = document.querySelector('.site-head');
+  const onScroll = () => head.classList.toggle('is-stuck', window.scrollY > 8);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* Reveal discreto: um efeito só, aplicado por JS — sem JS o conteúdo fica visível */
+  (() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!('IntersectionObserver' in window)) return;
+
+    const targets = document.querySelectorAll(
+      '.sec__head > *, .pains li, .flow li, .etapa, .paid__list li, .prod__item, .mod, .model__row, .close__grid > *'
+    );
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      }
+    }, { rootMargin: '0px 0px 140px 0px', threshold: 0.05 });
+
+    const groups = new Map();
+    targets.forEach((el) => {
+      const parent = el.parentElement;
+      const i = (groups.get(parent) ?? 0);
+      groups.set(parent, i + 1);
+      el.classList.add('js-reveal');
+      el.style.transitionDelay = Math.min(i, 4) * 55 + 'ms';
+      io.observe(el);
+    });
+
+    // fallback: nada pode ficar invisível se o observer não disparar
+    addEventListener('load', () => setTimeout(() => {
+      document.querySelectorAll('.js-reveal:not(.is-in)').forEach((el) => {
+        if (el.getBoundingClientRect().top < innerHeight) el.classList.add('is-in');
+      });
+    }, 400));
+  })();
+</script>
+</body>
+</html>

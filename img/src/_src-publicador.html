@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#131311; --paper:#f4f1ea; --card:#fffdf8; --soft:#faf7f0;
+    --line:#d9d3c6; --line-2:#e8e2d6; --muted:#6d6a60;
+    --accent:#2563eb; --accent-text:#1b4fcb; --accent-fill:#1d5ae0;
+    --ok:#1d7a4d; --warn:#8a5f08;
+    --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{ box-sizing:border-box; margin:0; }
+  body{
+    width:1240px; height:580px; background:var(--card); color:var(--ink);
+    font-family:var(--sans); overflow:hidden; -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column;
+  }
+
+  .top{
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+    padding:16px 24px; border-bottom:1px solid var(--line);
+  }
+  .top__l{ display:flex; align-items:baseline; gap:12px; }
+  .top__t{ font-size:15px; font-weight:700; letter-spacing:-.02em; }
+  .veh{
+    display:flex; align-items:center; gap:8px; border:1px solid var(--line);
+    border-radius:3px; padding:6px 10px; background:var(--soft); font-size:11.5px; font-weight:500;
+  }
+  .veh span{ font-family:var(--mono); font-size:8px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); }
+  .btn{
+    background:var(--accent-fill); color:#fff; border-radius:3px; padding:10px 16px;
+    font-size:12px; font-weight:600; letter-spacing:-.01em; white-space:nowrap;
+  }
+
+  .diff{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 24px; border-bottom:1px solid var(--line-2); background:var(--soft);
+    font-size:11.5px; color:var(--muted);
+  }
+  .diff b{ color:var(--ink); font-weight:600; }
+  .diff s{ font-family:var(--mono); font-size:11px; text-decoration-color:var(--accent); }
+  .diff em{
+    font-style:normal; font-family:var(--mono); font-size:11px; color:var(--ink); font-weight:500;
+  }
+  .diff .tag{
+    font-family:var(--mono); font-size:8px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--accent-text); border:1px solid currentColor; border-radius:2px; padding:2px 5px;
+  }
+
+  .body{ flex:1; display:grid; grid-template-columns:1.55fr 1px .85fr; min-height:0; }
+  .sep{ background:var(--line); }
+
+  .rows{ padding:6px 24px 0; overflow:hidden; }
+  .row{
+    display:grid; grid-template-columns:150px 1fr auto 118px; gap:14px; align-items:center;
+    padding:13px 0; border-bottom:1px solid var(--line-2); font-size:12px;
+  }
+  .row:last-child{ border-bottom:0; }
+  .ch{ font-weight:600; letter-spacing:-.01em; }
+  .mt{ font-family:var(--mono); font-size:9.5px; color:var(--muted); letter-spacing:.03em; }
+  .st{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:9px; letter-spacing:.06em; color:var(--muted); text-transform:uppercase; }
+  .dot{ width:6px; height:6px; border-radius:50%; flex:none; }
+  .dot--ok{ background:var(--ok); }
+  .dot--warn{ background:var(--warn); }
+  .dot--idle{ background:#b9b3a4; }
+  .act{ font-family:var(--mono); font-size:9px; letter-spacing:.05em; color:var(--warn); text-align:right; }
+  .act.off{ color:#b9b3a4; }
+
+  .side{ padding:16px 22px; display:flex; flex-direction:column; gap:14px; }
+  .k{ font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  .count{ display:flex; align-items:baseline; gap:6px; }
+  .count b{ font-size:30px; font-weight:700; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
+  .count span{ font-size:11.5px; color:var(--muted); }
+  .list{ display:grid; gap:7px; }
+  .li{ display:flex; justify-content:space-between; gap:10px; font-size:11.5px; padding-block:6px; border-bottom:1px solid var(--line-2); }
+  .li b{ font-weight:500; }
+  .li span{ color:var(--muted); }
+
+  .foot{
+    padding:12px 24px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; gap:16px;
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.05em; color:var(--muted);
+  }
+</style>
+</head>
+<body>
+
+  <div class="top">
+    <div class="top__l">
+      <span class="top__t">Publicação nos canais</span>
+    </div>
+    <div class="veh"><span>Veículo</span> Honda Civic EXL 2.0 · EST-0042</div>
+    <span class="btn">Atualizar preço em todos</span>
+  </div>
+
+  <div class="diff">
+    <span class="tag">Alteração</span>
+    <span>Preço</span> <s>R$ 134.900</s> <b>→</b> <em>R$ 128.900</em>
+    <span style="margin-left:auto;">Pedido há 12 segundos</span>
+  </div>
+
+  <div class="body">
+
+    <div class="rows">
+      <div class="row">
+        <span class="ch">OLX</span>
+        <span class="mt">anúncio 148820392 · 9 fotos</span>
+        <span class="st"><i class="dot dot--ok"></i> publicado há 3 min</span>
+        <span class="act">preço pendente</span>
+      </div>
+      <div class="row">
+        <span class="ch">Mercado Livre</span>
+        <span class="mt">MLB-339182047 · 9 fotos</span>
+        <span class="st"><i class="dot dot--ok"></i> publicado há 3 min</span>
+        <span class="act">preço pendente</span>
+      </div>
+      <div class="row">
+        <span class="ch">Instagram</span>
+        <span class="mt">post do estoque · 4 fotos</span>
+        <span class="st"><i class="dot dot--warn"></i> sincronizando</span>
+        <span class="act">aplicando preço</span>
+      </div>
+      <div class="row">
+        <span class="ch">Facebook</span>
+        <span class="mt">página da loja + Marketplace</span>
+        <span class="st"><i class="dot dot--idle"></i> aguardando aprovação</span>
+        <span class="act off">após aprovação</span>
+      </div>
+      <div class="row">
+        <span class="ch">Catálogo de anúncios</span>
+        <span class="mt">feed · 1.240 veículos</span>
+        <span class="st"><i class="dot dot--ok"></i> no ar há 3 min</span>
+        <span class="act">preço pendente</span>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="side">
+      <span class="k">Situação</span>
+      <div class="count"><b>3</b><span>de 5 canais publicados</span></div>
+      <div class="li" style="border-bottom:0; padding-top:0;"><b style="font-weight:400; color:var(--muted);">1 sincronizando · 1 aguardando</b></div>
+
+      <span class="k" style="margin-top:4px;">Esta alteração</span>
+      <div class="list">
+        <div class="li"><b>Preço</b><span>R$ 128.900</span></div>
+        <div class="li"><b>Descrição</b><span>atualizada</span></div>
+        <div class="li"><b>Fotos</b><span>9 · sem mudança</span></div>
+      </div>
+
+      <span class="k" style="margin-top:4px;">Histórico</span>
+      <div class="list">
+        <div class="li"><b>14:32</b><span>preço reduzido</span></div>
+        <div class="li"><b>12/03</b><span>publicado</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <span>Última sincronização às 14:32</span>
+    <span>O que falhar fica marcado e volta na próxima rodada</span>
+  </div>
+
+</body>
+</html>
